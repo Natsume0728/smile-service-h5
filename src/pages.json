@@ -1,9 +1,31 @@
 {
+  "easycom": {
+		"^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+	},
   "pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+    {
+      "path": "pages/detailPage/detailPage",
+      "style": {
+        "navigationBarTitleText": "微笑服务"
+      }
+    },
+    {
+      "path": "pages/QRcode/QRcode",
+      "style": {
+        "navigationBarTitleText": "微笑服务"
+      }
+    },
+    {
+      "path": "pages/equityExchange/equityExchange",
+      "style": {
+        "navigationBarTitleText": "微笑服务"
+      }
+    },
     {
       "path": "pages/home/home",
       "style": {
-        "navigationBarTitleText": "微笑服务"
+        "navigationBarTitleText": "微笑服务",
+        "disableScroll": true
       }
     },
     {
@@ -17,6 +39,6 @@
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "uni-app",
     "navigationBarBackgroundColor": "#2f3046",
-    "backgroundColor": "#F8F8F8"
+    "backgroundColor": "#2f3046"
   }
 }

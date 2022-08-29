@@ -7,7 +7,7 @@
           <view class="first">暂未登陆</view>
           <view class="second">登陆后即可验证领取服务权益</view>
         </view>
-        <view class="log-btn">立即登陆</view>
+        <view class="log-btn" @click="showModal = true">立即登陆</view>
       </view>
       <view class="second-line">累计使用 ></view>
       <view class="third-line">登陆后查看</view>
@@ -20,91 +20,171 @@
       </view>
       <view class="second-line">
         <view class="icon-container">
-          <view
-            class="img-container"
-            style="
-              background-image: url(https://lanhu.oss-cn-beijing.aliyuncs.com/SketchPngc7ad3119f8e562efb59973a3c6ee49807c0201c7392bd3e5ddd62ad38a97e094);
-            "
-          ></view>
+          <image src="/static/home-icon-one.png" class="icon"></image>
           <view class="icon-title">权益查看</view>
         </view>
         <view class="icon-container">
-          <view
-            class="img-container"
-            style="
-              background-image: url(https://lanhu-dds-backend.oss-cn-beijing.aliyuncs.com/merge_image/imgs/25c28980a9fa484bb5d68b650592d887_mergeImage.png);
-              background-size: 50rpx 51rpx;
-            "
-          ></view>
+          <image src="/static/home-icon-two.png" class="icon"></image>
           <view class="icon-title">权益兑换</view>
         </view>
         <view class="icon-container">
-          <view
-            class="img-container"
-            style="
-              background-image: url(https://lanhu.oss-cn-beijing.aliyuncs.com/SketchPng29ba0081dba490bc9d255d901da1fca99c170a4d734bad94e7bf9f655a5161ab);
-              background-size: 49rpx 49rpx;
-            "
-          ></view>
+          <image src="/static/home-icon-three.png" class="icon"></image>
           <view class="icon-title">权益使用</view>
         </view>
         <view class="icon-container">
-          <view
-            class="img-container"
-            style="
-              background-image: url(https://lanhu.oss-cn-beijing.aliyuncs.com/SketchPng97bce78978d7c512e77b044ac2f474ea819b7cc98e37c7906cabb6ca5c57d8b7);
-              background-size: 43rpx 51rpx;
-            "
-          ></view>
+          <image src="/static/home-icon-four.png" class="icon"></image>
           <view class="icon-title">服务评价</view>
         </view>
         <view class="icon-container">
-          <view
-            class="img-container"
-            style="
-              background-image: url(https://lanhu.oss-cn-beijing.aliyuncs.com/SketchPngb790ebeff920f31692a1cb13f25906ed4664b0153139a48a64c4fb61284456d6);
-              background-size: 57rpx 48rpx;
-            "
-          ></view>
+          <image src="/static/home-icon-five.png" class="icon"></image>
           <view class="icon-title">完成服务</view>
         </view>
       </view>
       <view class="third-line">—— 具体服务使用流程已实际为准 ——</view>
-      <view class="four-line">可用权益</view>
+      <view class="four-line">
+        <text>可用权益</text>
+      </view>
+      <view class="coupon-container">
+        <view class="left">
+          <!-- <text class="left-top">2张</text>
+          <text class="left-bottom"> 可用</text> -->
+        </view>
+        <view class="mid">
+          <text class="mid-top">洗车权益兑换卷</text>
+          <text class="mid-bottom">有效至2022年12月03日</text>
+        </view>
+        <view class="right">立即使用 ></view>
+      </view>
     </view>
-    <view class="footer">
-      <text class="left">服务协议</text>
-      <text class="mid">|</text>
-      <text class="right">建议反馈</text>
-    </view>
+    <footerInfo />
+      <u-modal :show="showModal" title="登录" showCancelButton @confirm="login">
+        <u--form labelPosition="left" :model="form" labelWidth="auto">
+          <u-form-item label="用户名:" prop="form.username" borderBottom>
+            <u--input v-model="form.username" border="none"></u--input>
+          </u-form-item>
+          <u-form-item label="密码:" prop="form.password" borderBottom>
+            <u--input v-model="form.password" border="none"></u--input>
+          </u-form-item>
+
+        </u--form>
+      </u-modal>
   </view>
 </template>
 
 <script>
+import footerInfo from "@/components/footerInfo.vue";
+import md5 from 'md5'
+import { mapMutations, mapState } from 'vuex'
+
 export default {
+    components: {
+    footerInfo,
+  },
   data() {
     return {
-      title: "Hello",
+      showModal: false,
+      rules: [],
+      form: {
+        username: '18354289971',
+        password: '123456',
+      },
+      couponList: [],
     };
   },
+  computed: {
+    ...mapState(['token'])
+  },
   onLoad() {},
-  methods: {},
+  methods: {
+    ...mapMutations(['SET_USER_INFO', 'SET_TOKEN']),
+
+    async login() {
+      uni.request({
+        url: 'https://dev.defenderfintech.com/smile-api/auth-api/auth/pwd/login',
+        method: 'post',
+        headers: { 'content-Type': 'application/json' },
+        data: {
+          username: this.form.username.trim(),
+          password: md5(this.form.password)
+        },
+        success: (res) => {
+          const { data, header } = res
+          if (data.code === '0000') {
+            
+            this.SET_TOKEN(header.token)
+            this.showModal = false
+            this.getAppUserInfo()
+            this.getCouponPage()
+          }
+        }
+      })
+    },
+
+    async getAppUserInfo() {
+      uni.request({
+        url: 'https://dev.defenderfintech.com/smile-api/app-api/user/info/getAppUserInfo',
+        method: 'GET',
+        header: {
+          'jh-token': this.token
+        },
+        success: ({ data }) => {
+          this.SET_USER_INFO(data.data)
+        }
+      })
+    },
+
+    async getCouponPage() {
+      uni.request({
+        url: 'https://dev.defenderfintech.com/smile-api/app-api/coupon/page',
+        method: 'post',
+        data: {
+          pageIndex: 1,
+          pageSize: 10
+        },
+        header: {
+          'jh-token': this.token
+        },
+        success: ({ data }) => {
+          this.couponList = [
+            {
+              "consumePeriodBegin": "2022-01-01 00:00:00",
+              "consumePeriodEnd": "2022-12-31 23:59:59",
+              "consumeTime": "",
+              "couponCategory": "",
+              "couponCodeUrl": "",
+              "couponNo": "",
+              "couponState": 0,
+              "createTime": "",
+              "exchangePeriodBegin": "2022-01-01 00:00:00",
+              "exchangePeriodEnd": "2022-12-31 23:59:59",
+              "exchangeTime": "",
+              "id": 0,
+              "remark": "",
+              "supplierCouponNo": "",
+              "supplierName": ""
+            }
+          ]
+        }
+      })
+    },
+  },
 };
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .content {
-  height: 100vh;
-  background-color: #2f3046;
+  position: relative;
+  height: 100%;
   padding-left: 20rpx;
   padding-right: 20rpx;
-
+  box-sizing: border-box;
   .card {
     padding: 63rpx 39rpx;
+    box-sizing: border-box;
     background: linear-gradient(360deg, #fffdfa 0%, #f9e3bc 50%, #f5ca9a 100%);
     box-shadow: 0px 2px 12px 0px rgba(172, 95, 34, 0.14);
     border-radius: 22px;
-    height: 25vh;
+    height: 400rpx;
     .first-line {
       display: flex;
       .avatar {
@@ -167,15 +247,12 @@ export default {
 
   .main {
     padding: 28rpx;
+    box-sizing: border-box;
     height: 56vh;
-    background: linear-gradient(90deg, #4a495f 0%, #353447 100%);
-    background-image: url(https://lanhu.oss-cn-beijing.aliyuncs.com/SketchPngd586ae9ddce6d5a179858b194d1943df372227c2e96c0e2f362815ce0c1c8f77);
-    background-size: 323rpx 343rpx;
+    background-image: url(@/static/home-main.png);
+    background-size: 100% 100%;
     background-repeat: no-repeat;
-    background-position: center 70%;
-    border-radius: 13rpx;
-    border: 2rpx solid rgba(245, 205, 158, 1);
-    // border-image: linear-gradient(141deg, rgba(249, 224, 204, 0.36), rgba(245, 205, 158, 1), rgba(245, 205, 158, 1)) 2 2;
+    margin-top: 80rpx;
     .first-line {
       height: 44rpx;
       font-size: 32rpx;
@@ -196,15 +273,10 @@ export default {
       display: flex;
       justify-content: space-between;
       .icon-container {
-        width: 96rpx;
-        .img-container {
-          width: 96rpx;
-          height: 96rpx;
-          border-radius: 96rpx;
-          background-color: #3e3b4b;
-          background-repeat: no-repeat;
-          background-size: 50rpx 36rpx;
-          background-position: center;
+        width: 108rpx;
+        .icon {
+          width: 108rpx;
+          height: 108rpx;
         }
         .icon-title {
           margin-top: 8rpx;
@@ -235,22 +307,69 @@ export default {
       font-weight: 600;
       color: #b1a1a0;
       line-height: 35rpx;
+      display: flex;
+      justify-content: space-between;
+    }
+    .coupon-container {
+      box-sizing: border-box;
+      width: 660rpx;
+      height: 150rpx;
+      background-image: url(@/static/home-coupon.png);
+      background-size: 100%;
+      display: flex;
+      padding: 36rpx 42rpx;
+      padding-right: 0;
+      .left {
+        display: flex;
+        flex-direction: column;
+        font-family: PingFangSC-Semibold, PingFang SC;
+        font-weight: 600;
+        color: #531311;
+        width: 120rpx;
+        .left-top {
+          font-size: 37rpx;
+          line-height: 52rpx;
+        }
+        .left-bottom {
+          font-size: 19rpx;
+          line-height: 26rpx;
+          margin-left: 4rpx;
+        }
+      }
+      .mid {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-family: PingFangSC-Medium, PingFang SC;
+        width: 320rpx;
+        .mid-top {
+          font-size: 28rpx;
+          font-weight: 600;
+          color: #531311;
+          line-height: 39rpx;
+        }
+        .mid-bottom {
+          font-size: 19rpx;
+          font-weight: 400;
+          color: #8C7C75;
+          line-height: 26rpx;
+        }
+      }
+      .right {
+        width: 180rpx;
+        height: 100%;
+        font-size: 19rpx;
+        font-family: PingFangSC-Medium, PingFang SC;
+        font-weight: 500;
+        color: #AC8E8C;
+        line-height: 26rpx;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+      }
     }
   }
 
-  .footer {
-    position: fixed;
-    bottom: 30rpx;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    font-family: PingFangSC-Regular, PingFang SC;
-    color: #a3a3a3;
-    font-size: 28rpx;
-    .mid {
-      padding: 0 25rpx;
-    }
-  }
 }
 </style>
