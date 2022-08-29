@@ -1,53 +1,75 @@
 <template>
-	<view class="section">
-		<view class="nav-bar">
-			<view class="bar active">权益详情</view>
-			<view class="bar">已兑换订单</view>
-			<view class="bar">已完成订单</view>
-		</view>
-		<view class="content">
-      <view>待兑换权益</view>
-      <view>已过期权益</view>
-		</view>
-    <footerInfo />
-	</view>
+  <view class="container">
+    <view class="tab-list">
+      <view
+        v-for="item in list"
+        :key="item.name"
+        class="tab-item"
+        :class="{ active: item.name === activeTab }"
+        @click="activeTab = item.name"
+      >
+        {{ item.name }}
+      </view>
+    </view>
+    <couponContentOne v-if="activeTab === '待兑换'" />
+    <couponContentTwo v-if="activeTab === '待使用'" />
+    <couponContentTwoThree v-if="activeTab === '已使用'" />
+    <couponContentTwoFour v-if="activeTab === '已过期'" />
+  </view>
 </template>
 
 <script>
 import footerInfo from "@/components/footerInfo.vue";
+import couponContentOne from './components/couponContentOne.vue' 
+import couponContentTwo from './components/couponContentTwo.vue' 
+import couponContentTwoThree from './components/couponContentTwoThree.vue' 
+import couponContentTwoFour from './components/couponContentTwoFour.vue' 
+
 export default {
-	components: {
-		footerInfo,
-	},
+  name: 'detailPage',
+  components: {
+    couponContentOne,
+    couponContentTwo,
+    couponContentTwoThree,
+    couponContentTwoFour,
+    footerInfo,
+  },
+  data() {
+    return {
+      activeTab: '待兑换',
+      list: [
+        { name: '待兑换' },
+        { name: '待使用' },
+        { name: '已使用' },
+        { name: '已过期' },
+      ],
+    }
+  },
+
+  methods: {
+
+  }
 };
 </script>
 
 <style lang="less" scoped>
-.section {
-	background-color: #2f3046;
-	.nav-bar {
-		display: flex;
-		justify-content: space-between;
-		border-bottom: 2rpx solid rgba(246, 220, 194, 1);
-		.bar {
-			width: 33%;
-      height: 80rpx;
-      line-height: 80rpx;
-			font-size: 32rpx;
-			font-family: PingFangSC-Medium, PingFang SC;
-			font-weight: 500;
-			color: #9c8376;
-			text-align: center;
-			&.active {
-				border-bottom: 9rpx solid rgba(246, 220, 194, 1);
-			}
-		}
-	}
-	.content {
-		min-height: 100vh;
-		padding-left: 20rpx;
-		padding-right: 20rpx;
-		padding-top: 100rpx;
-	}
+.container {
+  padding-bottom: 10rpx;
+  .tab-list {
+    height: 80rpx;
+    line-height: 80rpx;
+    border-bottom: 2rpx solid #EFCBAE;
+    display: flex;
+    .tab-item {
+      width: 25%;
+      text-align: center;
+      font-size: 28rpx;
+      font-family: PingFangSC-Medium, PingFang SC;
+      color: #9C8376;
+      &.active {
+        border-bottom: 8rpx solid #F6DCC2;
+      }
+    }
+  }
 }
 </style>

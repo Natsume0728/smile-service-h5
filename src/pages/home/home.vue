@@ -43,11 +43,11 @@
       <view class="third-line">—— 具体服务使用流程已实际为准 ——</view>
       <view class="four-line">
         <text>可用权益</text>
+        <text @click="toDetailPage">查看全部</text>
       </view>
       <view class="coupon-container">
         <view class="left">
-          <!-- <text class="left-top">2张</text>
-          <text class="left-bottom"> 可用</text> -->
+          <text>待使用</text>
         </view>
         <view class="mid">
           <text class="mid-top">洗车权益兑换卷</text>
@@ -96,6 +96,12 @@ export default {
   },
   onLoad() {},
   methods: {
+    toDetailPage() {
+      uni.navigateTo({
+        url: '/pages/detailPage/detailPage'
+      });
+    },
+
     ...mapMutations(['SET_USER_INFO', 'SET_TOKEN']),
 
     async login() {
@@ -124,9 +130,7 @@ export default {
       uni.request({
         url: 'https://dev.defenderfintech.com/smile-api/app-api/user/info/getAppUserInfo',
         method: 'GET',
-        header: {
-          'jh-token': this.token
-        },
+        header: { 'jh-token': this.token },
         success: ({ data }) => {
           this.SET_USER_INFO(data.data)
         }
@@ -138,6 +142,7 @@ export default {
         url: 'https://dev.defenderfintech.com/smile-api/app-api/coupon/page',
         method: 'post',
         data: {
+          couponState: 1,
           pageIndex: 1,
           pageSize: 10
         },
@@ -309,65 +314,6 @@ export default {
       line-height: 35rpx;
       display: flex;
       justify-content: space-between;
-    }
-    .coupon-container {
-      box-sizing: border-box;
-      width: 660rpx;
-      height: 150rpx;
-      background-image: url(@/static/home-coupon.png);
-      background-size: 100%;
-      display: flex;
-      padding: 36rpx 42rpx;
-      padding-right: 0;
-      .left {
-        display: flex;
-        flex-direction: column;
-        font-family: PingFangSC-Semibold, PingFang SC;
-        font-weight: 600;
-        color: #531311;
-        width: 120rpx;
-        .left-top {
-          font-size: 37rpx;
-          line-height: 52rpx;
-        }
-        .left-bottom {
-          font-size: 19rpx;
-          line-height: 26rpx;
-          margin-left: 4rpx;
-        }
-      }
-      .mid {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        font-family: PingFangSC-Medium, PingFang SC;
-        width: 320rpx;
-        .mid-top {
-          font-size: 28rpx;
-          font-weight: 600;
-          color: #531311;
-          line-height: 39rpx;
-        }
-        .mid-bottom {
-          font-size: 19rpx;
-          font-weight: 400;
-          color: #8C7C75;
-          line-height: 26rpx;
-        }
-      }
-      .right {
-        width: 180rpx;
-        height: 100%;
-        font-size: 19rpx;
-        font-family: PingFangSC-Medium, PingFang SC;
-        font-weight: 500;
-        color: #AC8E8C;
-        line-height: 26rpx;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        text-align: center;
-      }
     }
   }
 
