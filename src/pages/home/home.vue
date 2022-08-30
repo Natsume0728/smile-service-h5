@@ -2,15 +2,17 @@
   <view class="content">
     <view class="card">
       <view class="first-line">
-        <view class="avatar"></view>
+        <u-avatar :src="userInfo && userInfo.headImgUrl"></u-avatar>
         <view class="log-info">
-          <view class="first">暂未登陆</view>
-          <view class="second">登陆后即可验证领取服务权益</view>
+            <view v-if="!token" class="first">暂未登陆</view>
+            <view v-if="!token" class="second">登陆后即可验证领取服务权益</view>
+          <view v-if="token" class="nickName">{{ userInfo && userInfo.nickName }}</view>
         </view>
-        <view class="log-btn" @click="showModal = true">立即登陆</view>
+        <view v-if="!token" class="log-btn" @click="showModal = true">立即登陆</view>
+        <view v-else class="log-btn" @click="receiveByCode" >立即激活</view>
       </view>
-      <view class="second-line">累计使用 ></view>
-      <view class="third-line">登陆后查看</view>
+        <u-button @click="latestCode" >获取验证码</u-button>
+
     </view>
     <view class="main">
       <view class="first-line">
@@ -43,17 +45,21 @@
       <view class="third-line">—— 具体服务使用流程已实际为准 ——</view>
       <view class="four-line">
         <text>可用权益</text>
-        <text @click="toDetailPage">查看全部</text>
+        <text v-if="token" @click="toDetailPage">查看全部</text>
       </view>
-      <view class="coupon-container">
+      <view v-for="item in couponList" :key="item.id" class="coupon-container" style="margin-bottom: 40rpx;">
         <view class="left">
-          <text>待使用</text>
+          <text>{{ item.couponState | couponStateFilter}}</text>
         </view>
         <view class="mid">
-          <text class="mid-top">洗车权益兑换卷</text>
-          <text class="mid-bottom">有效至2022年12月03日</text>
+          <text class="mid-top">{{ item.couponCategory }}</text>
+          <text class="mid-bottom">
+            {{ item.couponState === 0 ? `有效至${item.exchangePeriodEnd}` : `有效至${item.consumePeriodEnd}` }}
+          </text>
         </view>
-        <view class="right">立即使用 ></view>
+        <view class="right" @click="jump(item.couponState)">
+          {{ item.couponState | couponStateBtnFilter }}
+        </view>
       </view>
     </view>
     <footerInfo />
@@ -77,7 +83,23 @@ import md5 from 'md5'
 import { mapMutations, mapState } from 'vuex'
 
 export default {
-    components: {
+  filters: {
+    couponStateFilter(value) {
+      if (value === 0) return '待兑换'
+      if (value === 1) return '待使用'
+      if (value === 2) return '已使用'
+      if (value === 3) return '已过期'
+      return '--'
+    },
+    couponStateBtnFilter(value) {
+      if (value === 0) return '立即兑换 >'
+      if (value === 1) return '立即使用 >'
+      if (value === 2) return '已使用'
+      if (value === 3) return '已过期'
+      return '--'
+    }
+  },
+  components: {
     footerInfo,
   },
   data() {
@@ -92,10 +114,45 @@ export default {
     };
   },
   computed: {
-    ...mapState(['token'])
+    ...mapState(['token', 'userInfo']),
   },
   onLoad() {},
   methods: {
+    latestCode() {
+      uni.request({
+        url: 'https://dev.defenderfintech.com/smile-api/manage-api/merchantOrderConsumer/latestCode',
+        method: 'GET',
+        header: { 'jh-token': this.token },
+        data: { phone: '18354289971' },
+        success: ({ data }) => {
+            if (data.code === '0000') {
+          }
+        }
+      })
+    },
+    receiveByCode() {
+      uni.request({
+        url: 'https://dev.defenderfintech.com/smile-api/app-api/coupon/receiveByCode',
+        method: 'GET',
+        header: { 'jh-token': this.token },
+        data: { code: 'LTHWO7J1' },
+        success: ({ data }) => {
+            if (data.code === '0000') {
+          }
+        }
+      })
+    },
+
+    jump(couponState) {
+      if (couponState === 2 || couponState === 3) return
+      if (couponState === 0) {
+        uni.navigateTo({
+          url: '/pages/equityExchange/equityExchange'
+        });
+        return
+      }
+    },
+
     toDetailPage() {
       uni.navigateTo({
         url: '/pages/detailPage/detailPage'
@@ -141,34 +198,12 @@ export default {
       uni.request({
         url: 'https://dev.defenderfintech.com/smile-api/app-api/coupon/page',
         method: 'post',
-        data: {
-          couponState: 1,
-          pageIndex: 1,
-          pageSize: 10
-        },
-        header: {
-          'jh-token': this.token
-        },
+        data: { pageIndex: 1, pageSize: 3 },
+        header: { 'jh-token': this.token },
         success: ({ data }) => {
-          this.couponList = [
-            {
-              "consumePeriodBegin": "2022-01-01 00:00:00",
-              "consumePeriodEnd": "2022-12-31 23:59:59",
-              "consumeTime": "",
-              "couponCategory": "",
-              "couponCodeUrl": "",
-              "couponNo": "",
-              "couponState": 0,
-              "createTime": "",
-              "exchangePeriodBegin": "2022-01-01 00:00:00",
-              "exchangePeriodEnd": "2022-12-31 23:59:59",
-              "exchangeTime": "",
-              "id": 0,
-              "remark": "",
-              "supplierCouponNo": "",
-              "supplierName": ""
-            }
-          ]
+            if (data.code === '0000') {
+            this.couponList = data.data.list
+          }
         }
       })
     },
@@ -189,19 +224,18 @@ export default {
     background: linear-gradient(360deg, #fffdfa 0%, #f9e3bc 50%, #f5ca9a 100%);
     box-shadow: 0px 2px 12px 0px rgba(172, 95, 34, 0.14);
     border-radius: 22px;
-    height: 400rpx;
+    height: 300rpx;
     .first-line {
       display: flex;
-      .avatar {
-        width: 77rpx;
-        height: 77rpx;
-        border-radius: 77rpx;
-        background-color: red;
-        flex-shrink: 0;
-      }
+      align-items: center;
+      height: 80rpx;
       .log-info {
-        width: 434rpx;
+        height: 100%;
+        width: calc(100% - 245rpx);
         padding-left: 20rpx;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
         .first {
           height: 46rpx;
           font-size: 33rpx;
@@ -218,6 +252,15 @@ export default {
           color: #433f3f;
           line-height: 29rpx;
         }
+        .nickName {
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          font-size: 33rpx;
+          font-family: PingFangSC-Medium, PingFang SC;
+          font-weight: 500;
+          color: #3A3A3C;
+        }
       }
       .log-btn {
         flex-shrink: 0;
@@ -232,32 +275,16 @@ export default {
         text-align: center;
       }
     }
-    .second-line {
-      height: 29rpx;
-      font-size: 21rpx;
-      font-family: PingFangSC-Medium, PingFang SC;
-      font-weight: 500;
-      color: #433f3f;
-      line-height: 29rpx;
-    }
-    .third-line {
-      height: 52rpx;
-      font-size: 37rpx;
-      font-family: PingFangSC-Semibold, PingFang SC;
-      font-weight: 600;
-      color: #3a3a3c;
-      line-height: 52rpx;
-    }
   }
 
   .main {
     padding: 28rpx;
     box-sizing: border-box;
-    height: 56vh;
+    height: 65vh;
     background-image: url(@/static/home-main.png);
     background-size: 100% 100%;
     background-repeat: no-repeat;
-    margin-top: 80rpx;
+    margin-top: 50rpx;
     .first-line {
       height: 44rpx;
       font-size: 32rpx;
@@ -306,6 +333,7 @@ export default {
       line-height: 29rpx;
     }
     .four-line {
+      padding-bottom: 40rpx;
       height: 35rpx;
       font-size: 25rpx;
       font-family: PingFangSC-Semibold, PingFang SC;

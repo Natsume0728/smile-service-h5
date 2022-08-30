@@ -4,6 +4,13 @@
 	},
   "pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
     {
+      "path": "pages/home/home",
+      "style": {
+        "navigationBarTitleText": "微笑服务",
+        "disableScroll": true
+      }
+    },
+    {
       "path": "pages/detailPage/detailPage",
       "style": {
         "navigationBarTitleText": "微笑服务"
@@ -19,13 +26,6 @@
       "path": "pages/equityExchange/equityExchange",
       "style": {
         "navigationBarTitleText": "微笑服务"
-      }
-    },
-    {
-      "path": "pages/home/home",
-      "style": {
-        "navigationBarTitleText": "微笑服务",
-        "disableScroll": true
       }
     },
     {

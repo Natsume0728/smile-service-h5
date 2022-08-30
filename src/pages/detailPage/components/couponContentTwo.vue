@@ -32,7 +32,6 @@ export default {
     ...mapState(['token'])
   },
   mounted() {
-    console.log('mounted')
     this.getCouponPage()
   },
   methods: {
@@ -51,7 +50,6 @@ export default {
           this.status = 'loadmore'
           if (data.code === '0000') {
             this.list = [...this.list, ...data.data.list]
-            console.log('this.list', this.list)
             if ((data.data.pageNo * data.data.pageSize) >= data.data.total) {
               this.status = 'nomore'
             } else {
