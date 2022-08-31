@@ -13,8 +13,8 @@
     </view>
     <couponContentOne v-if="activeTab === '待兑换'" />
     <couponContentTwo v-if="activeTab === '待使用'" />
-    <couponContentTwoThree v-if="activeTab === '已使用'" />
-    <couponContentTwoFour v-if="activeTab === '已过期'" />
+    <couponContentThree v-if="activeTab === '已使用'" />
+    <couponContentFour v-if="activeTab === '已过期'" />
   </view>
 </template>
 
@@ -22,16 +22,16 @@
 import footerInfo from "@/components/footerInfo.vue";
 import couponContentOne from './components/couponContentOne.vue' 
 import couponContentTwo from './components/couponContentTwo.vue' 
-import couponContentTwoThree from './components/couponContentTwoThree.vue' 
-import couponContentTwoFour from './components/couponContentTwoFour.vue' 
+import couponContentThree from './components/couponContentThree.vue' 
+import couponContentFour from './components/couponContentFour.vue' 
 
 export default {
   name: 'detailPage',
   components: {
     couponContentOne,
     couponContentTwo,
-    couponContentTwoThree,
-    couponContentTwoFour,
+    couponContentThree,
+    couponContentFour,
     footerInfo,
   },
   data() {

@@ -81,6 +81,7 @@
 import footerInfo from "@/components/footerInfo.vue";
 import md5 from 'md5'
 import { mapMutations, mapState } from 'vuex'
+const BASE_API = process.env.VUE_APP_BASE_API
 
 export default {
   filters: {
@@ -120,7 +121,7 @@ export default {
   methods: {
     latestCode() {
       uni.request({
-        url: 'https://dev.defenderfintech.com/smile-api/manage-api/merchantOrderConsumer/latestCode',
+        url: `${BASE_API}/manage-api/merchantOrderConsumer/latestCode`,
         method: 'GET',
         header: { 'jh-token': this.token },
         data: { phone: '18354289971' },
@@ -132,7 +133,7 @@ export default {
     },
     receiveByCode() {
       uni.request({
-        url: 'https://dev.defenderfintech.com/smile-api/app-api/coupon/receiveByCode',
+        url: `${BASE_API}/app-api/coupon/receiveByCode`,
         method: 'GET',
         header: { 'jh-token': this.token },
         data: { code: 'LTHWO7J1' },
@@ -163,7 +164,7 @@ export default {
 
     async login() {
       uni.request({
-        url: 'https://dev.defenderfintech.com/smile-api/auth-api/auth/pwd/login',
+        url: `${BASE_API}/auth-api/auth/pwd/login`,
         method: 'post',
         headers: { 'content-Type': 'application/json' },
         data: {
@@ -185,7 +186,7 @@ export default {
 
     async getAppUserInfo() {
       uni.request({
-        url: 'https://dev.defenderfintech.com/smile-api/app-api/user/info/getAppUserInfo',
+        url: `${BASE_API}/app-api/user/info/getAppUserInfo`,
         method: 'GET',
         header: { 'jh-token': this.token },
         success: ({ data }) => {
@@ -196,7 +197,7 @@ export default {
 
     async getCouponPage() {
       uni.request({
-        url: 'https://dev.defenderfintech.com/smile-api/app-api/coupon/page',
+        url: `${BASE_API}/app-api/coupon/page`,
         method: 'post',
         data: { pageIndex: 1, pageSize: 3 },
         header: { 'jh-token': this.token },

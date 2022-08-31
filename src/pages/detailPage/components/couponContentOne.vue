@@ -18,6 +18,7 @@
 
 <script>
 import { mapState } from 'vuex'
+const BASE_API = process.env.VUE_APP_BASE_API
 export default {
   name: 'couponContentOne',
   data() {
@@ -39,7 +40,7 @@ export default {
     getCouponPage(v) {
       this.status = 'loading'
       uni.request({
-        url: 'https://dev.defenderfintech.com/smile-api/app-api/coupon/page',
+        url: `${BASE_API}/app-api/coupon/page`,
         method: 'POST',
         header: { 'jh-token': this.token },
         data: {
