@@ -11,48 +11,97 @@
       </view>
     </view>
     <view class="server-title">可兑换服务</view>
-    <view class="card-info">
-      <view class="info-content">
-        <view class="card-info-one">京车会·洗车权益开</view>
-        <view class="card-info-two">* 5.0 服务次数 4002</view>
-        <view class="card-info-three">兑换后可复制券码至京车汇门店使用</view>
+    <view v-for="item in list" :key="`${item.supplierNo}${item.supplierSkuNo}`" class="card-info">
+      <view class="card-main">
+        <u-avatar :src="item.supplierSkuImage" shape="square" size="124rpx"></u-avatar>
+        <view class="info-content">
+          <view class="card-info-one">{{ item.supplierSkuName }}</view>
+          <view class="card-info-two">
+            <u-rate :value="1" readonly count="1" activeColor="#F8AC5E"></u-rate> {{ item.score }} 服务次数 {{ item.serviceCount}}
+          </view>
+          <view class="card-info-three">{{ item.supplierSkuDesc }}</view>
+        </view>
       </view>
-      <view class="card-btn">立即兑换</view>
+      <view class="card-btn" @click="couponExchange(item.supplierSkuNo)">立即兑换</view>
     </view>
-    <view class="card-info">
-      <view class="info-content">
-        <view class="card-info-one">京车会·洗车权益开</view>
-        <view class="card-info-two">* 5.0 服务次数 4002</view>
-        <view class="card-info-three">兑换后可复制券码至京车汇门店使用</view>
-      </view>
-      <view class="card-btn">立即兑换</view>
-    </view>
-    <view class="card-info">
-      <view class="info-content">
-        <view class="card-info-one">京车会·洗车权益开</view>
-        <view class="card-info-two">* 5.0 服务次数 4002</view>
-        <view class="card-info-three">兑换后可复制券码至京车汇门店使用</view>
-      </view>
-      <view class="card-btn">立即兑换</view>
-    </view>
-    <view class="card-info">
-      <view class="info-content">
-        <view class="card-info-one">京车会·洗车权益开</view>
-        <view class="card-info-two">* 5.0 服务次数 4002</view>
-        <view class="card-info-three">兑换后可复制券码至京车汇门店使用</view>
-      </view>
-      <view class="card-btn">立即兑换</view>
-    </view>
-    <footerInfo />
+
+    <u-loadmore :status="status" dashed line @loadmore="getCouponPage" />
+
   </view>
 </template>
 
 <script>
 import footerInfo from "@/components/footerInfo.vue";
+import { mapMutations, mapState } from 'vuex'
+const BASE_API = process.env.VUE_APP_BASE_API
+
 export default {
   components: {
     footerInfo,
   },
+
+  data() {
+    return {
+      status: 'loadmore',
+      pageIndex: 1,
+      pageSize: 7,
+      couponId: null,
+      list: [],
+    }
+  },
+
+  computed: {
+    ...mapState(['token', 'userInfo']),
+  },
+
+  onLoad({ couponId}) {
+    this.couponId = Number(couponId)
+    this.getSupplierSkuInfo()
+  },
+
+  methods: {
+    async couponExchange(supplierSkuNo) {
+      uni.request({
+        url: `${BASE_API}/app-api/coupon/exchange`,
+        method: 'POST',
+        header: { 'jh-token': this.token },
+        data: {
+          couponId: this.couponId,
+          supplierSkuNo,
+        },
+        success: ({ data }) => {
+          if (data.code  === '0000') {
+          }
+        }
+      })
+    },
+
+    async getSupplierSkuInfo() {
+      this.status = 'loading'
+      uni.request({
+        url: `${BASE_API}/app-api/supplier/getSupplierSkuInfo`,
+        method: 'POST',
+        header: { 'jh-token': this.token },
+        data: {
+          couponId: this.couponId,
+          pageSize: this.pageSize,
+          pageIndex: this.pageIndex,
+        },
+        success: ({ data}) => {
+          this.status = 'loadmore'
+          if (data.code === '0000') {
+            this.list = [...this.list, ...data.data.list]
+            if ((data.data.pageNo * data.data.pageSize) >= data.data.total) {
+              this.status = 'nomore'
+            } else {
+              this.status = 'loadmore'
+            }
+          }
+           this.pageIndex ++
+        }
+      })
+    },
+  }
 };
 </script>
 
@@ -103,42 +152,42 @@ export default {
     justify-content: space-between;
     box-sizing: border-box;
     padding: 36rpx;
-    padding-left: 200rpx;
-    height: 272rpx;
+    height: 260rpx;
     background: #ffffff;
     border-radius: 16rpx;
-    background-image: url(https://lanhu-dds-backend.oss-cn-beijing.aliyuncs.com/merge_image/imgs/52e32e5a6a6f4b198921dcc2a0a083f3_mergeImage.png);
-    background-repeat: no-repeat;
-    background-size: 142rpx 142rpx;
-    background-position: 36rpx 36rpx;
-    .info-content {
-      height: 142rpx;
+    .card-main {
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      .card-info-one {
-        height: 45rpx;
-        font-size: 32rpx;
-        font-family: PingFangSC-Semibold, PingFang SC;
-        font-weight: 600;
-        color: #3a3a3c;
-        line-height: 45rpx;
-      }
-      .card-info-two {
-        height: 33rpx;
-        font-size: 24rpx;
-        font-family: PingFangSC-Regular, PingFang SC;
-        font-weight: 400;
-        color: #757575;
-        line-height: 33rpx;
-      }
-      .card-info-three {
-        height: 33rpx;
-        font-size: 24rpx;
-        font-family: PingFangSC-Regular, PingFang SC;
-        font-weight: 400;
-        color: #757575;
-        line-height: 33rpx;
+      .info-content {
+        padding-left: 30rpx;
+        height: 124rpx;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        .card-info-one {
+          height: 45rpx;
+          font-size: 32rpx;
+          font-family: PingFangSC-Semibold, PingFang SC;
+          font-weight: 600;
+          color: #3a3a3c;
+          line-height: 45rpx;
+        }
+        .card-info-two {
+          height: 33rpx;
+          font-size: 24rpx;
+          font-family: PingFangSC-Regular, PingFang SC;
+          font-weight: 400;
+          color: #757575;
+          line-height: 33rpx;
+          display: flex;
+        }
+        .card-info-three {
+          height: 33rpx;
+          font-size: 24rpx;
+          font-family: PingFangSC-Regular, PingFang SC;
+          font-weight: 400;
+          color: #757575;
+          line-height: 33rpx;
+        }
       }
     }
     .card-btn {
@@ -157,4 +206,5 @@ export default {
     }
   }
 }
+
 </style>

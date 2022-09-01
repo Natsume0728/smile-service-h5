@@ -9,9 +9,9 @@
           <view v-if="token" class="nickName">{{ userInfo && userInfo.nickName }}</view>
         </view>
         <view v-if="!token" class="log-btn" @click="showModal = true">立即登陆</view>
-        <view v-else class="log-btn" @click="receiveByCode" >立即激活</view>
+        <view v-else class="log-btn" @click="showActivateModal = true" >立即激活</view>
       </view>
-        <u-button @click="latestCode" >获取验证码</u-button>
+        
 
     </view>
     <view class="main">
@@ -57,23 +57,45 @@
             {{ item.couponState === 0 ? `有效至${item.exchangePeriodEnd}` : `有效至${item.consumePeriodEnd}` }}
           </text>
         </view>
-        <view class="right" @click="jump(item.couponState)">
+        <view class="right" @click="jump(item.couponState, item.id)">
           {{ item.couponState | couponStateBtnFilter }}
         </view>
       </view>
     </view>
     <footerInfo />
-      <u-modal :show="showModal" title="登录" showCancelButton @confirm="login">
-        <u--form labelPosition="left" :model="form" labelWidth="auto">
-          <u-form-item label="用户名:" prop="form.username" borderBottom>
-            <u--input v-model="form.username" border="none"></u--input>
-          </u-form-item>
-          <u-form-item label="密码:" prop="form.password" borderBottom>
-            <u--input v-model="form.password" border="none"></u--input>
-          </u-form-item>
-
-        </u--form>
-      </u-modal>
+    <u-modal :show="showModal" showCancelButton show-title="false" confirm-text="登录" @confirm="login" @cancel="showModal = false">
+      <u-form labelPosition="left" :model="form" labelWidth="auto">
+        <view v-if="loginByPassword" style="width: 100%; display: flex; justify-content: space-between; flex-wrap: nowrap; align-items: center;">
+          <text style="font-weight: 600;">账号密码登录</text>
+          <text @click="loginByPassword = false" style="color: rgb(41, 121, 255); font-size: 14rpx;">验证码登录</text>
+        </view>
+        <view v-else  style="width: 100%; display: flex; justify-content: space-between; flex-wrap: nowrap; align-items: center;">
+          <text style="font-weight: 600;">验证码登录</text>
+          <text @click="loginByPassword = true" style="color: rgb(41, 121, 255); font-size: 14rpx;">账号密码登录</text>
+        </view>
+        <u-form-item label="账号:" prop="form.username" borderBottom>
+          <u-input v-model="form.username" border="none"></u-input>
+        </u-form-item>
+        <u-form-item v-if="loginByPassword" label="密码:" prop="form.password" borderBottom>
+          <u-input v-model="form.password" border="none"></u-input>
+        </u-form-item>
+        <u-form-item v-else label="验证码:" prop="form.verificationCode" borderBottom>
+          <u-input v-model="form.verificationCode" border="none"></u-input>
+        </u-form-item>
+        <u-code :seconds="seconds" ref="uCode" @change="codeChange"></u-code>
+        <u-button v-if="!loginByPassword" type="primary" size="medium" style="margin-top: 10rpx;" @tap="getCode">{{tips}}</u-button>
+      </u-form>
+    </u-modal>
+    <u-modal :show="showActivateModal" showCancelButton show-title="false" @confirm="receiveByCode" @cancel="showActivateModal = false">
+      <u-form labelWidth="auto">
+        <u-form-item label="激活码:">
+          <u-input v-model="activateCode"></u-input>
+        </u-form-item>
+        <u-form-item label="获取激活码">
+          <u-button @click="latestCode" >获取激活码</u-button>
+        </u-form-item>
+      </u-form>
+    </u-modal>
   </view>
 </template>
 
@@ -105,11 +127,18 @@ export default {
   },
   data() {
     return {
+      showActivateModal: false,
+      activateCode: null,
+      tips: '',
+      seconds: 60,
+      loginByPassword: true,
       showModal: false,
       rules: [],
       form: {
         username: '18354289971',
-        password: '123456',
+        // username: null,
+        password: null,
+        verificationCode: null,
       },
       couponList: [],
     };
@@ -119,6 +148,33 @@ export default {
   },
   onLoad() {},
   methods: {
+    codeChange(text) {
+      this.tips = text;
+    },
+    getCode() {
+        if(this.$refs.uCode.canGetCode) {
+          uni.showLoading({ title: '正在获取验证码' })
+
+          uni.request({
+            url: `${BASE_API}/auth-api/auth/code/send`,
+            method: 'GET',
+            header: { 'jh-token': this.token },
+            data: { phone: '18507143257' },
+            success: ({ data }) => {
+                if (data.code === '0000') {
+                  uni.$u.toast('验证码已发送');
+                  this.$refs.uCode.start();
+                }
+              },
+            complete: () => {
+              uni.hideLoading();
+            }
+          })
+        } else {
+          uni.$u.toast('倒计时结束后再发送');
+        }
+      },
+
     latestCode() {
       uni.request({
         url: `${BASE_API}/manage-api/merchantOrderConsumer/latestCode`,
@@ -131,24 +187,27 @@ export default {
         }
       })
     },
+
     receiveByCode() {
       uni.request({
         url: `${BASE_API}/app-api/coupon/receiveByCode`,
         method: 'GET',
         header: { 'jh-token': this.token },
-        data: { code: 'LTHWO7J1' },
+        data: { code: this.activateCode },
         success: ({ data }) => {
             if (data.code === '0000') {
+              this.showActivateModal = false
+              this.getCouponPage()
           }
         }
       })
     },
 
-    jump(couponState) {
+    jump(couponState, couponId) {
       if (couponState === 2 || couponState === 3) return
       if (couponState === 0) {
         uni.navigateTo({
-          url: '/pages/equityExchange/equityExchange'
+          url: `/pages/equityExchange/equityExchange?couponState=${couponState}&couponId=${couponId}`
         });
         return
       }
@@ -163,25 +222,52 @@ export default {
     ...mapMutations(['SET_USER_INFO', 'SET_TOKEN']),
 
     async login() {
-      uni.request({
-        url: `${BASE_API}/auth-api/auth/pwd/login`,
-        method: 'post',
-        headers: { 'content-Type': 'application/json' },
-        data: {
-          username: this.form.username.trim(),
-          password: md5(this.form.password)
-        },
-        success: (res) => {
-          const { data, header } = res
-          if (data.code === '0000') {
-            
-            this.SET_TOKEN(header.token)
-            this.showModal = false
-            this.getAppUserInfo()
-            this.getCouponPage()
+      if (this.loginByPassword) {
+        uni.request({
+          url: `${BASE_API}/auth-api/auth/pwd/login`,
+          method: 'post',
+          headers: { 'content-Type': 'application/json' },
+          data: {
+            username: this.form.username.trim(),
+            password: md5(this.form.password)
+          },
+          success: (res) => {
+            const { data, header } = res
+            if (data.code === '0000') {
+              
+              this.SET_TOKEN(header.token)
+              this.showModal = false
+              this.getAppUserInfo()
+              this.getCouponPage()
+            } else {
+              uni.$u.toast(data?.msg);
+            }
           }
-        }
-      })
+        })
+      } else {
+        uni.request({
+          url: `${BASE_API}/auth-api/auth/code/login`,
+          method: 'post',
+          headers: { 'content-Type': 'application/json' },
+          data: {
+            userPhone: this.form.username.trim(),
+            code: this.form.verificationCode
+          },
+          success: (res) => {
+            console.log('res', res)
+            const { data, header } = res
+            if (data.code === '0000') {
+              
+              this.SET_TOKEN(header.token)
+              this.showModal = false
+              this.getAppUserInfo()
+              this.getCouponPage()
+            } else {
+              uni.$u.toast(data?.msg);
+            }
+          }
+        })
+      }
     },
 
     async getAppUserInfo() {
