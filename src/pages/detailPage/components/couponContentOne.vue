@@ -19,6 +19,7 @@
 <script>
 import { mapState } from 'vuex'
 const BASE_API = process.env.VUE_APP_BASE_API
+
 export default {
   name: 'couponContentOne',
   data() {
@@ -33,7 +34,6 @@ export default {
     ...mapState(['token'])
   },
   mounted() {
-    console.log('mounted')
     this.getCouponPage()
   },
   methods: {

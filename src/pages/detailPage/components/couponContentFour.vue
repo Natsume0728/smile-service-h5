@@ -34,7 +34,6 @@ export default {
     ...mapState(['token'])
   },
   mounted() {
-    console.log('mounted')
     this.getCouponPage()
   },
   methods: {
