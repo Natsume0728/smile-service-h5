@@ -1,5 +1,5 @@
 <template>
-  <view class="section">
+  <view class="couponContent">
     <view v-for="item in list" :key="item.id" class="content">
       <view class="coupon-container">
         <view class="left">
@@ -26,7 +26,7 @@ export default {
     return {
       status: 'loadmore',
       pageIndex: 1,
-      pageSize: 7,
+      pageSize: 6,
       list: [],
     }
   },
@@ -68,7 +68,8 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.section {
+.couponContent {
+  height: 100%;
   background-color: #2f3046;
   padding-top: 10rpx;
   .content {

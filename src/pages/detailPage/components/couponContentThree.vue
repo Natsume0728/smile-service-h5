@@ -1,5 +1,5 @@
 <template>
-  <view class="section">
+  <view class="couponContent">
     <view v-for="item in list" :key="item.id" class="content">
       <view class="coupon-container">
         <view class="left">
@@ -69,7 +69,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.section {
+.couponContent {
   background-color: #2f3046;
   padding-top: 10rpx;
   .content {
