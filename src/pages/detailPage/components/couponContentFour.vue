@@ -19,13 +19,14 @@
 <script>
 import { mapState } from 'vuex'
 const BASE_API = process.env.VUE_APP_BASE_API
+
 export default {
   name: 'couponContentOne',
   data() {
     return {
       status: 'loadmore',
       pageIndex: 1,
-      pageSize: 10,
+      pageSize: 7,
       list: [],
     }
   },

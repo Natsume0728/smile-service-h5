@@ -25,7 +25,7 @@ export default {
     return {
       status: 'loadmore',
       pageIndex: 1,
-      pageSize: 10,
+      pageSize: 7,
       list: [],
     }
   },
